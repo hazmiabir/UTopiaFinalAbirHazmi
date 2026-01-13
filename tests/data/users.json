@@ -1,0 +1,17 @@
+{
+  "standard": {
+    "username": "standard_user",
+    "password": "secret_sauce",
+    "description": "Utilisateur standard sans problème"
+  },
+  "problem": {
+    "username": "problem_user",
+    "password": "secret_sauce",
+    "description": "Utilisateur avec problèmes visuels"
+  },
+  "locked": {
+    "username": "locked_out_user",
+    "password": "secret_sauce",
+    "description": "Utilisateur verrouillé"
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "login": {
+    "validCredentials": {
+      "username": "standard_user",
+      "password": "secret_sauce"
+    },
+    "invalidPassword": {
+      "username": "standard_user",
+      "password": "wrong_password"
+    },
+    "lockedUser": {
+      "username": "locked_out_user",
+      "password": "secret_sauce"
+    },
+    "problemUser": {
+      "username": "problem_user",
+      "password": "secret_sauce"
+    }
+  },
+  "errorMessages": {
+    "usernameRequired": "Epic sadface: Username is required",
+    "passwordMismatch": "Epic sadface: Username and password do not match",
+    "lockedOut": "Epic sadface: Sorry, this user has been locked out"
+  },
+  "filters": {
+    "default": "az",
+    "priceLowHigh": "lohi",
+    "priceHighLow": "hilo",
+    "nameZA": "za"
+  },
+  "screenshots": {
+    "priceLowHigh": "produits-prix-croissant.png",
+    "priceHighLow": "produits-prix-decroissant.png",
+    "nameZA": "produits-nom-z-a.png",
+    "lockedError": "locked-user-error.png",
+    "problemUser": "problem-user-page.png"
+  }
+}
