@@ -115,6 +115,33 @@ class Actions {
     expect(firstName.localeCompare(lastName)).toBeGreaterThan(0);
   }
 
+  // ... (reste du code inchangé)
+
+  /**
+   * Vérifier que les prix sont triés par ordre croissant
+   */
+  verifyAscendingOrder(prices) {
+    const sorted = [...prices].sort((a, b) => a - b);
+    expect(prices, "Le tri croissant a échoué (Bug détecté)").toEqual(sorted);
+  }
+
+  /**
+   * Vérifier que les prix sont triés par ordre décroissant
+   */
+  verifyDescendingOrder(prices) {
+    const sorted = [...prices].sort((a, b) => b - a);
+    expect(prices, "Le tri décroissant a échoué (Bug détecté)").toEqual(sorted);
+  }
+
+  /**
+   * Vérifier que les noms sont triés alphabétiquement (Z-A)
+   */
+  verifyAlphabeticalDescending(names) {
+    const sorted = [...names].sort().reverse();
+    expect(names, "Le tri alphabétique Z-A a échoué (Bug détecté)").toEqual(sorted);
+  }
+
+// ... (reste du code inchangé)
   /**
    * Capturer une screenshot
    * @param {Page} page - Instance Playwright page

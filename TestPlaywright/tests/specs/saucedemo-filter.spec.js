@@ -118,3 +118,37 @@ test.describe('Tests de connexion', () => {
     console.log('✅ Erreur mot de passe incorrect détectée');
   });
 });
+// ... (gardez vos tests existants pour le standard_user)
+
+/**
+ * Suite de tests : Détection de bugs (Problem User)
+ */
+test.describe('Tests de robustesse - Utilisateur à problèmes', () => {
+
+  test('Le filtrage par prix doit échouer pour le problem_user', async ({ page }) => {
+    // 1. Connexion avec l'utilisateur problématique
+    await actions.login(page, users.problem.username, users.problem.password);
+    await actions.verifyLoginSuccess(page);
+
+    // 2. Action de filtrage (Prix croissant)
+    // Note : Le menu change visuellement, mais pas la liste des produits
+    await actions.selectFilter(page, steps.filters.priceLowHigh);
+    
+    // 3. Récupération des données réelles à l'écran
+    const prices = await actions.getProductPrices(page);
+    console.log('Prix affichés pour problem_user :', prices);
+
+    // 4. Assertion : va échouer car prices ne sera pas trié
+    actions.verifyAscendingOrder(prices);
+  });
+
+  test('Le filtrage alphabétique doit échouer pour le problem_user', async ({ page }) => {
+    await actions.login(page, users.problem.username, users.problem.password);
+    await actions.selectFilter(page, steps.filters.nameZA);
+    
+    const names = await actions.getProductNames(page);
+    
+    // Va échouer car le site ne réagit pas au clic sur cet utilisateur
+    actions.verifyAlphabeticalDescending(names);
+  });
+});
