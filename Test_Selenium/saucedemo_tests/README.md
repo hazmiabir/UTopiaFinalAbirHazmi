@@ -35,7 +35,7 @@ saucedemo_tests/
     Les tests valident la connexion pour différents types d’utilisateurs :
            * Connexion réussie pour les utilisateurs standards
            * Vérification du comportement attendu pour l’utilisateur locked_out_user
-           * Détection et valida*tion des messages d’erreur en cas de connexion bloquée
+           * Détection et validation des messages d’erreur en cas de connexion bloquée
 
     📄 Test concerné :
         * test_login_all_users
