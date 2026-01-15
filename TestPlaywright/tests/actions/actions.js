@@ -1,159 +1,316 @@
-// ===================================================================
-// File: tests/actions/actions.js
-// Description: Contient toutes les actions réutilisables
-// ===================================================================
+/**
+ * @fileoverview Reusable page actions for SauceDemo application
+ * @description Provides high-level actions that can be used across multiple tests
+ */
 
-const actionMap = require('../pages/actionMap');
 const { expect } = require('@playwright/test');
+const { selectors } = require('../pages/actionMap.js');
 
 /**
- * Actions - Classe contenant toutes les actions utilisateur
- * Chaque méthode représente une action métier
+ * Authentication actions
  */
-class Actions {
-  
-  /**
-   * Se connecter à l'application
-   * @param {Page} page - Instance Playwright page
-   * @param {string} username - Nom d'utilisateur
-   * @param {string} password - Mot de passe
-   */
-  async login(page, username, password) {
-    await page.goto('https://www.saucedemo.com/');
-    await page.fill(actionMap.login.usernameInput, username);
-    await page.fill(actionMap.login.passwordInput, password);
-    await page.click(actionMap.login.loginButton);
+class AuthActions {
+  constructor(page) {
+    this.page = page;
   }
 
   /**
-   * Vérifier que la connexion a réussi
-   * @param {Page} page - Instance Playwright page
+   * Performs login with provided credentials
+   * @param {string} username - Username for login
+   * @param {string} password - Password for login
    */
-  async verifyLoginSuccess(page) {
-    await expect(page.locator(actionMap.inventory.title)).toHaveText('Products');
-    await expect(page).toHaveURL('https://www.saucedemo.com/inventory.html');
+  async login(username, password) {
+    await this.page.fill(selectors.auth.usernameInput, username);
+    await this.page.fill(selectors.auth.passwordInput, password);
+    await this.page.click(selectors.auth.loginButton);
   }
 
   /**
-   * Vérifier un message d'erreur de connexion
-   * @param {Page} page - Instance Playwright page
-   * @param {string} expectedMessage - Message attendu
+   * Verifies error message is displayed
+   * @param {string} expectedMessage - Expected error message text
    */
-  async verifyLoginError(page, expectedMessage) {
-    const errorMessage = page.locator(actionMap.login.errorMessage);
-    await expect(errorMessage).toBeVisible();
-    await expect(errorMessage).toContainText(expectedMessage);
+  async verifyErrorMessage(expectedMessage) {
+    const errorElement = this.page.locator(selectors.auth.errorMessage);
+    await expect(errorElement).toBeVisible();
+    await expect(errorElement).toContainText(expectedMessage);
   }
 
   /**
-   * Sélectionner un filtre dans le dropdown
-   * @param {Page} page - Instance Playwright page
-   * @param {string} filterValue - Valeur du filtre (az, za, lohi, hilo)
+   * Performs logout from the application
    */
-  async selectFilter(page, filterValue) {
-    const dropdown = page.locator(actionMap.inventory.filterDropdown);
-    await dropdown.selectOption(filterValue);
-    await page.waitForTimeout(500); // Attendre l'application du tri
+  async logout() {
+    await this.page.click(selectors.nav.menuButton);
+    await this.page.click(selectors.nav.logoutLink);
+  }
+}
+
+/**
+ * Product listing actions
+ */
+class ProductActions {
+  constructor(page) {
+    this.page = page;
   }
 
   /**
-   * Vérifier le filtre actuel
-   * @param {Page} page - Instance Playwright page
-   * @param {string} expectedValue - Valeur attendue
+   * Changes the product sort filter
+   * @param {string} sortOption - Sort option value
    */
-  async verifyCurrentFilter(page, expectedValue) {
-    const dropdown = page.locator(actionMap.inventory.filterDropdown);
-    await expect(dropdown).toHaveValue(expectedValue);
+  async selectSortFilter(sortOption) {
+    await this.page.selectOption(selectors.products.sortDropdown, sortOption);
+    await this.page.waitForTimeout(300);
   }
 
   /**
-   * Récupérer tous les prix des produits
-   * @param {Page} page - Instance Playwright page
-   * @returns {Array<number>} Tableau des prix en nombres
+   * Gets the current sort filter value
+   * @returns {Promise<string>} Current filter value
    */
-  async getProductPrices(page) {
-    const pricesText = await page.locator(actionMap.inventory.productPrices).allTextContents();
-    return pricesText.map(price => parseFloat(price.replace('$', '')));
+  async getCurrentSortFilter() {
+    return await this.page.locator(selectors.products.sortDropdown).inputValue();
   }
 
   /**
-   * Récupérer tous les noms des produits
-   * @param {Page} page - Instance Playwright page
-   * @returns {Array<string>} Tableau des noms de produits
+   * Retrieves all product prices as numbers
+   * @returns {Promise<number[]>} Array of product prices
    */
-  async getProductNames(page) {
-    return await page.locator(actionMap.inventory.productNames).allTextContents();
+  async getProductPrices() {
+    const priceElements = await this.page.locator(selectors.products.itemPrice).all();
+    const prices = [];
+    
+    for (const element of priceElements) {
+      const priceText = await element.textContent();
+      const price = parseFloat(priceText.replace('$', ''));
+      prices.push(price);
+    }
+    
+    return prices;
   }
 
   /**
-   * Vérifier que les prix sont triés par ordre croissant
-   * @param {Array<number>} prices - Tableau de prix
+   * Gets all product names in current order
+   * @returns {Promise<string[]>} Array of product names
    */
-  verifyAscendingOrder(prices) {
+  async getProductNames() {
+    const nameElements = await this.page.locator(selectors.products.itemName).all();
+    const names = [];
+    
+    for (const element of nameElements) {
+      names.push(await element.textContent());
+    }
+    
+    return names;
+  }
+
+  /**
+   * Verifies products are sorted by price in ascending order
+   */
+  async verifyPriceSortAscending() {
+    const prices = await this.getProductPrices();
+    
     for (let i = 0; i < prices.length - 1; i++) {
       expect(prices[i]).toBeLessThanOrEqual(prices[i + 1]);
     }
   }
 
   /**
-   * Vérifier que les prix sont triés par ordre décroissant
-   * @param {Array<number>} prices - Tableau de prix
+   * Verifies products are sorted by price in descending order
    */
-  verifyDescendingOrder(prices) {
+  async verifyPriceSortDescending() {
+    const prices = await this.getProductPrices();
+    
     for (let i = 0; i < prices.length - 1; i++) {
       expect(prices[i]).toBeGreaterThanOrEqual(prices[i + 1]);
     }
   }
 
   /**
-   * Vérifier que les noms sont triés alphabétiquement (Z-A)
-   * @param {Array<string>} names - Tableau de noms
+   * Verifies products are sorted by name alphabetically
+   * @param {boolean} ascending - True for A-Z, false for Z-A
    */
-  verifyAlphabeticalDescending(names) {
-    const firstName = names[0];
-    const lastName = names[names.length - 1];
-    expect(firstName.localeCompare(lastName)).toBeGreaterThan(0);
-  }
-
-  // ... (reste du code inchangé)
-
-  /**
-   * Vérifier que les prix sont triés par ordre croissant
-   */
-  verifyAscendingOrder(prices) {
-    const sorted = [...prices].sort((a, b) => a - b);
-    expect(prices, "Le tri croissant a échoué (Bug détecté)").toEqual(sorted);
+  async verifyNameSort(ascending) {
+    const names = await this.getProductNames();
+    const sortedNames = [...names].sort();
+    
+    if (!ascending) {
+      sortedNames.reverse();
+    }
+    
+    expect(names).toEqual(sortedNames);
   }
 
   /**
-   * Vérifier que les prix sont triés par ordre décroissant
+   * Adds a product to cart by product name
+   * @param {string} productName - Full name of the product
    */
-  verifyDescendingOrder(prices) {
-    const sorted = [...prices].sort((a, b) => b - a);
-    expect(prices, "Le tri décroissant a échoué (Bug détecté)").toEqual(sorted);
+  async addProductToCart(productName) {
+    const addButton = this.page.locator(selectors.products.addToCartButton(productName));
+    await addButton.click();
   }
 
   /**
-   * Vérifier que les noms sont triés alphabétiquement (Z-A)
+   * Verifies cart badge shows correct item count
+   * @param {number} expectedCount - Expected number of items
    */
-  verifyAlphabeticalDescending(names) {
-    const sorted = [...names].sort().reverse();
-    expect(names, "Le tri alphabétique Z-A a échoué (Bug détecté)").toEqual(sorted);
-  }
-
-// ... (reste du code inchangé)
-  /**
-   * Capturer une screenshot
-   * @param {Page} page - Instance Playwright page
-   * @param {string} filename - Nom du fichier
-   */
-  async takeScreenshot(page, filename) {
-    await page.screenshot({
-      path: `screenshots/${filename}`,
-      fullPage: true
-    });
-    console.log(`✅ Screenshot capturée: ${filename}`);
+  async verifyCartBadgeCount(expectedCount) {
+    const badge = this.page.locator(selectors.nav.cartBadge);
+    
+    if (expectedCount === 0) {
+      await expect(badge).not.toBeVisible();
+    } else {
+      await expect(badge).toBeVisible();
+      await expect(badge).toHaveText(expectedCount.toString());
+    }
   }
 }
 
-module.exports = new Actions();
+/**
+ * Shopping cart actions
+ */
+class CartActions {
+  constructor(page) {
+    this.page = page;
+  }
+
+  /**
+   * Navigates to the shopping cart
+   */
+  async goToCart() {
+    await this.page.click(selectors.nav.cartLink);
+  }
+
+  /**
+   * Proceeds to checkout from cart
+   */
+  async proceedToCheckout() {
+    await this.page.click(selectors.cart.checkoutButton);
+  }
+
+  /**
+   * Verifies a product is in the cart
+   * @param {string} productName - Name of the product to verify
+   */
+  async verifyProductInCart(productName) {
+    const cartItem = this.page.locator(selectors.cart.itemName, { hasText: productName });
+    await expect(cartItem).toBeVisible();
+  }
+
+  /**
+   * Gets the number of items in cart
+   * @returns {Promise<number>} Number of cart items
+   */
+  async getCartItemCount() {
+    return await this.page.locator(selectors.cart.item).count();
+  }
+
+  /**
+   * Clears all items from the cart
+   */
+  async clearCart() {
+    await this.goToCart();
+    const removeButtons = await this.page.locator('[id^="remove-"]').all();
+    
+    for (const button of removeButtons) {
+      await button.click();
+      await this.page.waitForTimeout(100);
+    }
+  }
+}
+
+/**
+ * Checkout process actions
+ */
+class CheckoutActions {
+  constructor(page) {
+    this.page = page;
+  }
+
+  /**
+   * Fills checkout information form
+   * @param {Object} info - Checkout information
+   */
+  async fillCheckoutInfo(info) {
+    await this.page.fill(selectors.checkout.firstNameInput, info.firstName);
+    await this.page.fill(selectors.checkout.lastNameInput, info.lastName);
+    await this.page.fill(selectors.checkout.postalCodeInput, info.postalCode);
+  }
+
+  /**
+   * Continues to checkout overview
+   */
+  async continueToOverview() {
+    await this.page.click(selectors.checkout.continueButton);
+  }
+
+  /**
+   * Completes the purchase
+   */
+  async finishPurchase() {
+    await this.page.click(selectors.overview.finishButton);
+  }
+
+  /**
+   * Verifies the order confirmation message
+   * @param {string} expectedMessage - Expected confirmation header text
+   */
+  async verifyOrderConfirmation(expectedMessage) {
+    const confirmHeader = this.page.locator(selectors.confirmation.header);
+    await expect(confirmHeader).toBeVisible();
+    
+    if (expectedMessage) {
+      await expect(confirmHeader).toHaveText(expectedMessage);
+    } else {
+      await expect(confirmHeader).toContainText('Thank you');
+    }
+  }
+
+  /**
+   * Gets the total price from checkout overview
+   * @returns {Promise<number>} Total price
+   */
+  async getTotalPrice() {
+    const totalText = await this.page.locator(selectors.overview.total).textContent();
+    return parseFloat(totalText.replace('Total: $', ''));
+  }
+
+  /**
+   * Verifies checkout overview contains expected elements
+   */
+  async verifyCheckoutOverview() {
+    await expect(this.page.locator(selectors.overview.summaryInfo)).toBeVisible();
+    await expect(this.page.locator(selectors.overview.itemTotal)).toBeVisible();
+    await expect(this.page.locator(selectors.overview.tax)).toBeVisible();
+    await expect(this.page.locator(selectors.overview.total)).toBeVisible();
+  }
+}
+
+/**
+ * Utility actions used across multiple page objects
+ */
+class CommonActions {
+  constructor(page) {
+    this.page = page;
+  }
+
+  /**
+   * Takes a screenshot with a descriptive name
+   * @param {string} name - Screenshot filename
+   */
+  async takeScreenshot(name) {
+    await this.page.screenshot({ path: `screenshots/${name}.png`, fullPage: true });
+  }
+
+  /**
+   * Waits for page to be fully loaded
+   */
+  async waitForPageLoad() {
+    await this.page.waitForLoadState('networkidle');
+  }
+}
+
+module.exports = {
+  AuthActions,
+  ProductActions,
+  CartActions,
+  CheckoutActions,
+  CommonActions
+};

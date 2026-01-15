@@ -1,38 +1,50 @@
 {
-  "login": {
-    "validCredentials": {
-      "username": "standard_user",
-      "password": "secret_sauce"
-    },
-    "invalidPassword": {
-      "username": "standard_user",
-      "password": "wrong_password"
-    },
-    "lockedUser": {
-      "username": "locked_out_user",
-      "password": "secret_sauce"
-    },
-    "problemUser": {
-      "username": "problem_user",
-      "password": "secret_sauce"
-    }
+  "config": {
+    "baseURL": "https://www.saucedemo.com",
+    "timeout": 30000
+  },
+  "credentials": {
+    "validPassword": "secret_sauce"
   },
   "errorMessages": {
-    "usernameRequired": "Epic sadface: Username is required",
-    "passwordMismatch": "Epic sadface: Username and password do not match",
-    "lockedOut": "Epic sadface: Sorry, this user has been locked out"
+    "lockedUser": "Epic sadface: Sorry, this user has been locked out.",
+    "invalidCredentials": "Epic sadface: Username and password do not match any user in this service",
+    "missingUsername": "Epic sadface: Username is required",
+    "missingPassword": "Epic sadface: Password is required"
   },
   "filters": {
-    "default": "az",
-    "priceLowHigh": "lohi",
-    "priceHighLow": "hilo",
-    "nameZA": "za"
+    "nameAscending": {
+      "value": "az",
+      "label": "Name (A to Z)"
+    },
+    "nameDescending": {
+      "value": "za",
+      "label": "Name (Z to A)"
+    },
+    "priceLowHigh": {
+      "value": "lohi",
+      "label": "Price (low to high)"
+    },
+    "priceHighLow": {
+      "value": "hilo",
+      "label": "Price (high to low)"
+    }
   },
-  "screenshots": {
-    "priceLowHigh": "produits-prix-croissant.png",
-    "priceHighLow": "produits-prix-decroissant.png",
-    "nameZA": "produits-nom-z-a.png",
-    "lockedError": "locked-user-error.png",
-    "problemUser": "problem-user-page.png"
+  "checkout": {
+    "testCustomer": {
+      "firstName": "Test",
+      "lastName": "User",
+      "postalCode": "12345"
+    },
+    "confirmationMessage": "Thank you for your order!",
+    "confirmationText": "Your order has been dispatched, and will arrive just as fast as the pony can get there!"
+  },
+  "products": {
+    "backpack": "Sauce Labs Backpack",
+    "bikeLight": "Sauce Labs Bike Light",
+    "boltTShirt": "Sauce Labs Bolt T-Shirt",
+    "fleeceJacket": "Sauce Labs Fleece Jacket",
+    "onesie": "Sauce Labs Onesie",
+    "tShirtRed": "Test.allTheThings() T-Shirt (Red)"
   }
 }

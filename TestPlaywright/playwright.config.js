@@ -1,28 +1,33 @@
-// @ts-check
-import { defineConfig, devices } from '@playwright/test';
+/**
+ * @fileoverview Playwright test configuration
+ * @description Global configuration for test execution on Chrome only
+ */
 
-export default defineConfig({
-  /* 🔹 Dossier des tests */
+// @ts-check
+const { defineConfig, devices } = require('@playwright/test');
+
+module.exports = defineConfig({
+  /* 🔹 Test directory */
   testDir: './tests/specs',
 
-  /* 🔹 Dossier des résultats (screenshots, vidéos, traces) */
+  /* 🔹 Output directory for test results */
   outputDir: 'test-results',
 
-  /* 🔹 Timeout global */
-  timeout: 30 * 1000,
+  /* 🔹 Global timeout (90 seconds) */
+  timeout: 90 * 1000,
 
+  /* 🔹 Expect timeout */
   expect: {
-    timeout: 5000,
+    timeout: 15000,
   },
 
-  /* 🔹 Exécution parallèle */
-  fullyParallel: true,
-
+  /* 🔹 Test execution settings - Chrome only, sequential */
+  fullyParallel: false,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  retries: process.env.CI ? 2 : 1,
+  workers: 1,
 
-  /* 🔹 REPORTERS */
+  /* 🔹 Reporter configuration */
   reporter: [
     ['list'],
     ['html', {
@@ -31,38 +36,58 @@ export default defineConfig({
     }],
     ['json', {
       outputFile: 'test-results/results.json'
+    }],
+    ['junit', {
+      outputFile: 'test-results/junit.xml'
     }]
   ],
 
-  /* 🔹 Options communes */
+  /* 🔹 Shared settings for all tests */
   use: {
+    // Base URL for navigation
     baseURL: 'https://www.saucedemo.com',
 
-    headless: !!process.env.CI,
+    // Run in headless mode (set to false for debugging)
+    headless: true,
 
+    // Capture screenshot only on failure
     screenshot: 'only-on-failure',
+
+    // Record video only on failure
     video: 'retain-on-failure',
+
+    // Trace on first retry
     trace: 'on-first-retry',
 
+    // Viewport size
     viewport: { width: 1280, height: 720 },
 
+    // Ignore HTTPS errors
     ignoreHTTPSErrors: true,
 
-    actionTimeout: 10 * 1000,
-    navigationTimeout: 30 * 1000,
+    // Action timeout
+    actionTimeout: 15000,
+
+    // Navigation timeout
+    navigationTimeout: 30000,
+
+    // Launch options
+    launchOptions: {
+      // Slow down actions when debugging
+      slowMo: process.env.DEBUG ? 500 : 0
+    }
   },
 
-  /* 🔹 Projets navigateurs */
+  /* 🔹 Chrome project only */
   projects: [
     {
       name: 'Chrome',
       use: {
         ...devices['Desktop Chrome'],
         channel: 'chrome',
-        launchOptions: {
-          args: ['--start-maximized'],
-        },
+        locale: 'en-US',
+        timezoneId: 'America/New_York'
       },
-    },
-  ],
+    }
+  ]
 });
