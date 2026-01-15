@@ -58,7 +58,7 @@ pipeline {
                         echo ================================
                         echo Running Playwright tests
                         echo ================================
-                        npx playwright test --reporter=html
+                        npx playwright test --reporter=html,line
                     '''
                 }
             }
@@ -67,14 +67,9 @@ pipeline {
         stage('Archive Test Results') {
             steps {
                 dir('TestPlaywright') {
-                    publishHTML([
-                        allowMissing: true,
-                        alwaysLinkToLastBuild: true,
-                        keepAll: true,
-                        reportDir: 'playwright-report',
-                        reportFiles: 'index.html',
-                        reportName: 'Playwright Test Report'
-                    ])
+                    // Archive all test artifacts
+                    archiveArtifacts artifacts: 'playwright-report/**/*', 
+                                     allowEmptyArchive: true
                     
                     archiveArtifacts artifacts: 'test-results/**/*', 
                                      allowEmptyArchive: true
@@ -91,9 +86,11 @@ pipeline {
         }
         success {
             echo 'SUCCESS: All tests passed!'
+            echo 'View archived artifacts to see the test report.'
         }
         failure {
-            echo 'FAILURE: Tests failed! Check the report.'
+            echo 'FAILURE: Tests failed!'
+            echo 'Check archived artifacts for screenshots and report.'
         }
     }
 }
