@@ -1,8 +1,8 @@
 pipeline {
     agent any
     
-    tools {
-        nodejs 'NodeJS' // Configurez dans Manage Jenkins → Tools
+    environment {
+        PATH = "C:\\Program Files\\nodejs;${env.PATH}"
     }
     
     stages {
@@ -16,9 +16,10 @@ pipeline {
         stage('Verify Environment') {
             steps {
                 bat '''
-                    echo Node version:
+                    echo ================================
+                    echo Checking Node and npm versions
+                    echo ================================
                     node --version
-                    echo npm version:
                     npm --version
                 '''
             }
@@ -28,7 +29,9 @@ pipeline {
             steps {
                 dir('TestPlaywright') {
                     bat '''
-                        echo Installing npm dependencies...
+                        echo ================================
+                        echo Installing npm dependencies
+                        echo ================================
                         npm ci
                     '''
                 }
@@ -39,7 +42,9 @@ pipeline {
             steps {
                 dir('TestPlaywright') {
                     bat '''
-                        echo Installing Playwright browsers...
+                        echo ================================
+                        echo Installing Playwright browsers
+                        echo ================================
                         npx playwright install --with-deps
                     '''
                 }
@@ -50,7 +55,9 @@ pipeline {
             steps {
                 dir('TestPlaywright') {
                     bat '''
-                        echo Running Playwright tests...
+                        echo ================================
+                        echo Running Playwright tests
+                        echo ================================
                         npx playwright test --reporter=html
                     '''
                 }
@@ -60,9 +67,8 @@ pipeline {
         stage('Archive Test Results') {
             steps {
                 dir('TestPlaywright') {
-                    // Archive HTML report
                     publishHTML([
-                        allowMissing: false,
+                        allowMissing: true,
                         alwaysLinkToLastBuild: true,
                         keepAll: true,
                         reportDir: 'playwright-report',
@@ -70,9 +76,8 @@ pipeline {
                         reportName: 'Playwright Test Report'
                     ])
                     
-                    // Archive test results (if using JUnit reporter)
-                    junit allowEmptyResults: true, 
-                          testResults: 'test-results/*.xml'
+                    archiveArtifacts artifacts: 'test-results/**/*', 
+                                     allowEmptyArchive: true
                 }
             }
         }
@@ -80,13 +85,15 @@ pipeline {
     
     post {
         always {
+            echo '================================'
             echo 'Pipeline finished.'
+            echo '================================'
         }
         success {
-            echo 'All tests passed!'
+            echo 'SUCCESS: All tests passed!'
         }
         failure {
-            echo 'Tests failed! Check the report.'
+            echo 'FAILURE: Tests failed! Check the report.'
         }
     }
 }
