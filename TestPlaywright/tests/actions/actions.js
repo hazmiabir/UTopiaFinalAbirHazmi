@@ -5,6 +5,7 @@
 
 const { expect } = require('@playwright/test');
 const { selectors } = require('../pages/actionMap.js');
+const path = require('path');
 
 /**
  * Authentication actions
@@ -293,10 +294,15 @@ class CommonActions {
 
   /**
    * Takes a screenshot with a descriptive name
-   * @param {string} name - Screenshot filename
+   * @param {string} name - Screenshot filename (without extension)
    */
   async takeScreenshot(name) {
-    await this.page.screenshot({ path: `screenshots/${name}.png`, fullPage: true });
+    const screenshotPath = path.join('screenshots', `${name}.png`);
+    await this.page.screenshot({ 
+      path: screenshotPath,
+      fullPage: true 
+    });
+    console.log(`📸 Screenshot saved: ${screenshotPath}`);
   }
 
   /**

@@ -50,8 +50,8 @@ module.exports = defineConfig({
     // Run in headless mode (set to false for debugging)
     headless: true,
 
-    // Capture screenshot only on failure
-    screenshot: 'only-on-failure',
+    // Capture screenshot on success and failure (change to 'only-on-failure' if needed)
+    screenshot: 'on',
 
     // Record video only on failure
     video: 'retain-on-failure',
