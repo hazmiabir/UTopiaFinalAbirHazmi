@@ -1,5 +1,5 @@
 {
-  "name": "utopiafinalabirhazmi",
+  "name": "UTopiaFinalAbirHazmi",
   "version": "1.0.0",
   "description": "Playwright test automation for SauceDemo with POM architecture",
   "main": "index.js",
