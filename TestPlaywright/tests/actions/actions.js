@@ -141,10 +141,27 @@ class ProductActions {
 
   /**
    * Adds a product to cart by product name
+   * Handles the case where the product might already be in cart
    * @param {string} productName - Full name of the product
    */
   async addProductToCart(productName) {
-    const addButton = this.page.locator(selectors.products.addToCartButton(productName));
+    const addButtonSelector = selectors.products.addToCartButton(productName);
+    const removeButtonSelector = selectors.products.removeButton(productName);
+    
+    // Check if product is already in cart (Remove button visible)
+    const removeButton = this.page.locator(removeButtonSelector);
+    const isInCart = await removeButton.isVisible().catch(() => false);
+    
+    if (isInCart) {
+      // Product already in cart, remove it first then add it back
+      console.log(`⚠️ Product "${productName}" already in cart, removing first...`);
+      await removeButton.click();
+      await this.page.waitForTimeout(200); // Wait for button to change
+    }
+    
+    // Now click the Add to Cart button
+    const addButton = this.page.locator(addButtonSelector);
+    await addButton.waitFor({ state: 'visible', timeout: 5000 });
     await addButton.click();
   }
 
