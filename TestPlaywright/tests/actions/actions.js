@@ -9,7 +9,6 @@ const { selectors } = require('../pages/actionMap.js');
 /**
  * Authentication actions
  */
-
 class AuthActions {
   constructor(page) {
     this.page = page;
